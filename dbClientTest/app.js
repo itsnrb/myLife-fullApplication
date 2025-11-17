@@ -35,8 +35,19 @@ app.post('/history/:id', express.json(), async (req, res) => {
 });
 
 app.get('/data', express.json(), async (req, res) => {
+  console.log('Received request to /data');
   try {
     const data = await clusterDbClient.find('test', 'history', {});
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/topics', express.json(), async (req, res) => {
+  console.log('Received request to /topics');
+  try {
+    const data = await clusterDbClient.find('test', 'topics', {});
     res.json(data);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -51,6 +62,32 @@ app.delete('/delete/:id', async (req, res) => {
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Not found' });
     }
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/deleteTopic/:id', async (req, res) => {
+  console.log('Delete request for topic id:', req.params.id);
+  try {
+    const id = Number(req.params.id);
+    const result = await clusterDbClient.deleteOne('test', 'topics', { id });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/topic', express.json(), async (req, res) => {
+  console.log('Received request to /topic');
+  try {
+    const data = req.body;
+    console.log('Received new data:', data);
+    const result = await clusterDbClient.insertOne('test', 'topics', data);
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
